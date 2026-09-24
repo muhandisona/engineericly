@@ -13,3 +13,4 @@ python-dateutil==2.9.0.post0
 six==1.17.0
 sqlparse==0.5.3
 types-python-dateutil==2.9.0.20251008
+whitenoise==6.12.0

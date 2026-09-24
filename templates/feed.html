@@ -1,197 +1,67 @@
-{% load static %}
-
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Engineericly | Feeds</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.1">
-    <link rel="icon" type="image/png" href="{% static 'images/logo_circle.png' %}">
+    {% include "partials/head.html" %}
+    <title>engineericly | models from the videos</title>
+    <meta name="description" content="Tap the post you watched to get the 3D model.">
+    <meta property="og:title" content="engineericly">
+    <meta property="og:description" content="Tap the post you watched to get the 3D model.">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'images/logo.jpg' %}">
 </head>
 <body>
-    <div class="header-section">
-        <div class="logo">
-            <img src="{% static 'images/logo.jpg' %}" alt="Engineericly Logo">
-        </div>
-        <h1 class="site-title">Engineericly</h1>
-        <p class="site-description">Check out showcased 3D model in my pages</p>
-        <a href="{% url 'about' %}" class="about-link">About Us</a>
-        
-        <div class="social-icons">
-            <a href="https://www.youtube.com/@engineericly  " class="social-icon youtube" target="_blank" aria-label="YouTube">
-                <i class="fab fa-youtube"></i>
-            </a>
-            <a href="https://www.instagram.com/engineericly" class="social-icon instagram" target="_blank" aria-label="Instagram">
-                <i class="fab fa-instagram"></i>
-            </a>
-            <a href="https://www.tiktok.com/@engineericly" class="social-icon tiktok" target="_blank" aria-label="TikTok">
-                <i class="fab fa-tiktok"></i>
-            </a>
+    <div class="bar" id="bar" aria-hidden="true">
+        <div class="bar-inner">
+            <img src="{% static 'images/logo_circle.png' %}" alt="">
+            <span class="wordmark">engineericly</span>
+            <a href="{% url 'about' %}{% if platform %}?from={{ platform }}{% endif %}" class="text-link" tabindex="-1">About</a>
+            {% include "partials/theme_toggle.html" %}
         </div>
     </div>
 
-    <div class="gallery-container">
-        <div class="masonry-grid" id="gallery">
-
-        </div>
-        <div class="loading" id="loading" style="display: none;">
-            <div class="spinner"></div>
-            <p>Loading more items...</p>
-        </div>
-    </div>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        const API_ENDPOINT = '/api/gallery';
-        let currentPage = 1;
-        let isLoading = false;
-        let hasNext = true;
-        
-        // Cache object to store fetched pages
-        const pageCache = new Map();
-        const CACHE_KEY = 'printables_gallery_cache';
-        const CACHE_EXPIRY = 30 * 60 * 1000; // 30 minutes
-
-        // Load cache from localStorage on page load
-        function loadCacheFromStorage() {
-            try {
-                const cached = localStorage.getItem(CACHE_KEY);
-                if (cached) {
-                    const { data, timestamp } = JSON.parse(cached);
-                    const now = Date.now();
-                    
-                    // Check if cache is still valid
-                    if (now - timestamp < CACHE_EXPIRY) {
-                        Object.entries(data).forEach(([page, pageData]) => {
-                            pageCache.set(parseInt(page), pageData);
-                        });
-                        return true;
-                    } else {
-                        // Clear expired cache
-                        localStorage.removeItem(CACHE_KEY);
-                    }
-                }
-            } catch (error) {
-                console.error('Error loading cache:', error);
-            }
-            return false;
-        }
-
-        // Save cache to localStorage
-        function saveCacheToStorage() {
-            try {
-                const cacheData = {
-                    data: Object.fromEntries(pageCache),
-                    timestamp: Date.now()
-                };
-                localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
-            } catch (error) {
-                console.error('Error saving cache:', error);
-            }
-        }
-
-        function createCard(item, isFeatured) {
-            const featuredClass = isFeatured ? 'featured' : '';
-            const badge = isFeatured ? `<div class="featured-badge"><i class="fas fa-star"></i> Latest Video Item</div>` : '';
-
-            return `
-                <div class="card-item ${featuredClass}">
-                    <a href="${item.link}" class="card-link" target="_blank">
-                        ${badge}
-                        <div class="card-image-wrapper">
-                            <img src="${item.file_link}" alt="${item.title || '3D Model'}" class="card-image" loading="lazy">
-                        </div>
-                        <div class="card-info">
-                            <h3 class="card-title">${item.title}</h3>
-                            <div class="card-subtitle">
-                                <span>View Link</span> <i class="fas fa-arrow-right"></i>
-                            </div>
-                        </div>
-                    </a>
+    <main class="page">
+        <header class="profile" id="profile">
+            <div class="profile-row">
+                <img class="avatar" src="{% static 'images/logo_circle.png' %}" alt="engineericly logo">
+                <div class="profile-name">
+                    <h1 class="wordmark">engineericly</h1>
+                    <span class="handle">@engineericly</span>
                 </div>
-            `;
-        }
+                <div class="profile-actions">
+                    <a href="{% url 'about' %}{% if platform %}?from={{ platform }}{% endif %}" class="text-link">About</a>
+                    {% include "partials/theme_toggle.html" %}
+                </div>
+            </div>
+            <p class="tagline">Tap the post you watched to get the model.</p>
+        </header>
 
-        async function loadMoreItems() {
-            if (isLoading || !hasNext) return;
-            
-            isLoading = true;
-            document.getElementById('loading').style.display = 'block';
+        <h2 class="visually-hidden">Models</h2>
+        <div class="grid" id="grid" aria-live="polite"></div>
+        <div class="feed-status" id="status" hidden></div>
+        <div class="sentinel" id="sentinel"></div>
 
-            try {
-                let data;
-                
-                // Check if page is already cached
-                if (pageCache.has(currentPage)) {
-                    // Use cached data
-                    data = pageCache.get(currentPage);
-                } else {
-                    // Fetch data from API
-                    const response = await fetch(`${API_ENDPOINT}?page=${currentPage}`);
+        {% include "partials/footer.html" %}
+    </main>
 
-                    if (!response.ok) {
-                        throw new Error(`HTTP error! status: ${response.status}`);
-                    }
+    <div class="sheet-layer" id="sheet-layer" hidden>
+        <button type="button" class="sheet-scrim" data-close aria-label="Close"></button>
+        <div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheet-title">
+            <div class="sheet-handle" aria-hidden="true"></div>
+            <div class="sheet-body">
+                <div class="sheet-thumb"><img id="sheet-img" src="" alt=""></div>
+                <div class="sheet-text">
+                    <div class="sheet-host" id="sheet-host"></div>
+                    <h3 class="sheet-title" id="sheet-title"></h3>
+                </div>
+            </div>
+            <a href="#" class="cta" id="sheet-cta" target="_blank" rel="noopener">
+                Get the model
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"></path><path d="M13 6l6 6-6 6"></path></svg>
+            </a>
+        </div>
+    </div>
 
-                    data = await response.json();
-                    console.log(data);
-                    
-                    // Store in cache
-                    pageCache.set(currentPage, data);
-                    // saveCacheToStorage();
-                }
-                
-                // Update pagination state from response
-                currentPage = data.page + 1;
-                hasNext = data.has_next;
-
-                // Render items
-                const gallery = document.getElementById('gallery');
-                data.items.forEach((item, index) => {
-                    const isFeatured = (data.page === 1 && index === 0);
-                    const card = createCard(item, isFeatured);
-                    gallery.insertAdjacentHTML('beforeend', card);
-                });
-
-                // if (!hasNext) {
-                //     document.getElementById('loading').innerHTML = '<p>No more items to load</p>';
-                //     setTimeout(() => {
-                //         document.getElementById('loading').style.display = 'none';
-                //     }, 2000);
-                // } else {
-                //     document.getElementById('loading').style.display = 'none';
-                // }
-                document.getElementById('loading').style.display = 'none';
-
-            } catch (error) {
-                console.error('Error loading items:', error);
-                document.getElementById('loading').innerHTML = '<p style="color: #dc3545;">Error loading items. Please try again.</p>';
-                setTimeout(() => {
-                    document.getElementById('loading').style.display = 'none';
-                    isLoading = false;
-                }, 3000);
-                return;
-            }
-
-            isLoading = false;
-        }
-
-        // loadCacheFromStorage();
-        loadMoreItems();
-
-        window.addEventListener('scroll', () => {
-            if (!hasNext) return;
-            
-            const scrollPosition = window.innerHeight + window.scrollY;
-            const threshold = document.documentElement.scrollHeight - 500;
-
-            if (scrollPosition >= threshold && !isLoading) {
-                loadMoreItems();
-            }
-        });
-    </script>
+    {{ platform|json_script:"platform" }}
+    <script>window.GALLERY_API = "{% url 'api_gallery' %}";</script>
+    <script src="{% static 'js/feed.js' %}?v=3.0" defer></script>
 </body>
 </html>

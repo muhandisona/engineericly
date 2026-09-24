@@ -3,53 +3,39 @@
 # ============================
 FROM python:3.12-slim AS builder
 
-# Environment variables for clean Python environment
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
     PIP_NO_CACHE_DIR=1 \
     PIP_DISABLE_PIP_VERSION_CHECK=1
 
-# Install system dependencies for Python packages
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    && rm -rf /var/lib/apt/lists/*
-
-# Create virtual environment
 RUN python -m venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-# Copy and install dependencies
 COPY requirements.txt .
-RUN pip install --upgrade pip && pip install -r requirements.txt
+RUN pip install -r requirements.txt
 
 # ============================
 # Stage 2: Production image
 # ============================
 FROM python:3.12-slim AS production
 
-# Environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1 \
-    PATH="/opt/venv/bin:$PATH"
+    PATH="/opt/venv/bin:$PATH" \
+    DATA_DIR=/app/data
 
-# Work directory
 WORKDIR /app
 
-# Copy virtual environment from builder
 COPY --from=builder /opt/venv /opt/venv
-
-# Copy application code
 COPY . .
 
-# Create static and media directories
-RUN mkdir -p /app/vol/static /app/vol/media
-RUN chmod +x ./start.sh
+RUN mkdir -p /app/data/vol/static /app/data/vol/media && chmod +x ./start.sh
 
-# Expose Gunicorn port
-EXPOSE 8112
+EXPOSE 8000
 
-# Keep root user (default)
-USER root
+# Runs as root so it can write to whatever host folder is mounted at /app/data.
 
-# Start the Django app
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/healthz', timeout=4)" || exit 1
+
 CMD ["./start.sh"]

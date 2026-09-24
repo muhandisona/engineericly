@@ -1,306 +1,110 @@
-{% load static %}
-
-<!DOCTYPE html>
+{% load static %}<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Engineericly | About</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link rel="stylesheet" href="{% static 'css/styles.css' %}?v=2.0">
-    <link rel="icon" type="image/png" href="{% static 'images/logo_circle.png' %}">
-    <style>
-        .about-container {
-            max-width: 1200px;
-            margin: 60px auto;
-            padding: 0 32px;
-        }
-
-        .back-link {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            margin-bottom: 40px;
-            color: var(--accent-primary);
-            text-decoration: none;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .back-link:hover {
-            gap: 12px;
-            color: var(--accent-hover);
-        }
-
-        .about-section {
-            background: var(--card-bg);
-            border: 1px solid var(--border-color);
-            border-radius: 20px;
-            padding: 60px 40px;
-            margin-bottom: 40px;
-            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
-        }
-
-        .section-title {
-            font-family: "Inter", -apple-system, sans-serif;
-            font-size: 32px;
-            font-weight: 700;
-            margin-bottom: 32px;
-            color: var(--text-main);
-        }
-
-        .channel-info {
-            display: grid;
-            gap: 20px;
-            margin-bottom: 24px;
-        }
-
-        .info-item {
-            display: flex;
-            gap: 16px;
-            padding: 16px;
-            background: var(--bg-secondary);
-            border-left: 4px solid var(--accent-primary);
-            border-radius: 8px;
-        }
-
-        .info-icon {
-            font-size: 20px;
-            color: var(--accent-primary);
-            min-width: 20px;
-        }
-
-        .info-text {
-            font-size: 15px;
-            color: var(--text-main);
-            line-height: 1.6;
-        }
-
-        .channel-contact {
-            margin-top: 32px;
-            padding: 20px;
-            background: var(--bg-secondary);
-            border-radius: 12px;
-            display: flex;
-            gap: 32px;
-            flex-wrap: wrap;
-        }
-
-        .contact-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .contact-label {
-            font-weight: 600;
-            color: var(--text-main);
-        }
-
-        .contact-value {
-            color: var(--accent-primary);
-            text-decoration: none;
-        }
-
-        .contact-value:hover {
-            text-decoration: underline;
-        }
-
-        .author-section {
-            display: grid;
-            grid-template-columns: 1fr 1.2fr;
-            gap: 40px;
-            align-items: start;
-        }
-
-        .author-photo {
-            width: 100%;
-            border-radius: 16px;
-            overflow: hidden;
-            border: 1px solid var(--border-color);
-        }
-
-        .author-photo img {
-            width: 100%;
-            height: auto;
-            display: block;
-        }
-
-        .author-info h3 {
-            font-family: "Inter", -apple-system, sans-serif;
-            font-size: 24px;
-            font-weight: 700;
-            color: var(--text-main);
-            margin-bottom: 8px;
-        }
-
-        .author-role {
-            font-size: 16px;
-            color: var(--accent-primary);
-            font-weight: 600;
-            margin-bottom: 24px;
-        }
-
-        .author-bio {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.8;
-            margin-bottom: 24px;
-        }
-
-        .author-contact {
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-            margin-top: 28px;
-        }
-
-        .author-contact-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 14px;
-        }
-
-        .author-contact-icon {
-            width: 24px;
-            height: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--bg-secondary);
-            border-radius: 6px;
-            color: var(--accent-primary);
-        }
-
-        @media (max-width: 768px) {
-            .author-section {
-                grid-template-columns: 1fr;
-            }
-
-            .about-section {
-                padding: 40px 24px;
-            }
-
-            .section-title {
-                font-size: 24px;
-            }
-
-            .about-container {
-                padding: 0 20px;
-            }
-
-            .channel-contact {
-                flex-direction: column;
-                gap: 16px;
-            }
-        }
-    </style>
+    {% include "partials/head.html" %}
+    <title>engineericly | about</title>
+    <meta name="description" content="3D printing, tested against the real thing.">
 </head>
-<body>
-    <div class="header-section">
-        <div class="logo">
-            <img src="{% static 'images/logo.jpg' %}" alt="Engineericly Logo">
-        </div>
-        <h1 class="site-title">Engineericly</h1>
-    </div>
+<body class="about-page">
+    <main class="page">
+        <nav class="about-top">
+            <a href="{{ back_url }}" class="text-link">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 18l-6-6 6-6"></path></svg>
+                Models
+            </a>
+            <div class="about-top-right">
+                {% include "partials/theme_toggle.html" %}
+                <img src="{% static 'images/logo_circle.png' %}" alt="engineericly">
+            </div>
+        </nav>
 
-    <div class="about-container">
-        <a href="{% url 'feed' %}" class="back-link">
-            <i class="fas fa-arrow-left"></i>
-            Back to Gallery
-        </a>
+        <section class="about-section about-intro">
+            <div class="eyebrow">About the channel</div>
+            <h1>3D printing, tested against the real thing.</h1>
+            <p class="lede">Practical engineering builds and DIY experiments made with 3D printers and simple tools.</p>
+        </section>
 
-        <!-- Channel Information Section -->
-        <div class="about-section">
-            <h2 class="section-title">About Our Channel</h2>
-
-            <div class="channel-info">
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-wrench"></i>
-                    </div>
-                    <div class="info-text">
-                        <strong>Engineering Projects & Experiments</strong> – We showcase practical engineering builds, DIY experiments, and innovative creations made with 3D printers and simple tools.
-                    </div>
+        <section class="about-section" aria-label="Channel numbers">
+            <div class="stats">
+                <div class="stat">
+                    <div class="stat-value">730K+</div>
+                    <div class="stat-label">YouTube subscribers</div>
                 </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-cube"></i>
-                    </div>
-                    <div class="info-text">
-                        <strong>3D Printing Focus</strong> – Our signature series "3D Printing Versus Real" compares 3D-printed objects with their real counterparts, garnering hundreds of millions of views globally.
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-lightbulb"></i>
-                    </div>
-                    <div class="info-text">
-                        <strong>Sustainable & Creative Designs</strong> – From gravity batteries to innovative tools, we create designs that are both practical and educational for a global audience.
-                    </div>
-                </div>
-
-                <div class="info-item">
-                    <div class="info-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="info-text">
-                        <strong>Growing Community</strong> – With 730,000+ subscribers and hundreds of millions of total views, Engineericly reaches engineering enthusiasts worldwide.
-                    </div>
+                <div class="stat">
+                    <div class="stat-value is-gold">100M+</div>
+                    <div class="stat-label">Total views</div>
                 </div>
             </div>
+        </section>
 
-            <div class="channel-contact">
-                <div class="contact-item">
-                    <span class="contact-label">Email:</span>
-                    <a href="mailto:engineericly@gmail.com" class="contact-value">engineericly@gmail.com</a>
+        <section class="about-section">
+            <h2>What we make</h2>
+            <div class="series">
+                <div class="series-num">01</div>
+                <div>
+                    <div class="series-title">3D Printing Versus Real</div>
+                    <div class="series-desc">The signature series: printed objects put up against their real counterparts.</div>
                 </div>
             </div>
-        </div>
-
-        <!-- Author Information Section -->
-        <div class="about-section">
-            <h2 class="section-title">Meet the Founder</h2>
-
-            <div class="author-section">
-                <div class="author-photo">
-                    <img src="{% static 'images/author.jpg' %}" alt="Jakhongirmirzo Ibrokhimov">
+            <div class="series">
+                <div class="series-num">02</div>
+                <div>
+                    <div class="series-title">Engineering experiments</div>
+                    <div class="series-desc">Hands-on builds that make complex ideas easy to follow.</div>
                 </div>
+            </div>
+            <div class="series">
+                <div class="series-num">03</div>
+                <div>
+                    <div class="series-title">Practical designs</div>
+                    <div class="series-desc">From gravity batteries to everyday tools, built to be useful.</div>
+                </div>
+            </div>
+        </section>
 
-                <div class="author-info">
-                    <h3>Jakhongirmirzo Ibrokhimov</h3>
-                    <p class="author-role">Engineer & Content Creator</p>
-
-                    <p class="author-bio">
-                        A young engineer from Fergana, Uzbekistan, with a passion for turning innovative ideas into reality. Jakhongirmirzo graduated from Inha University and currently works as an engineer while leading the Engineericly channel. Through hands-on experiments and 3D printing projects, he makes complex engineering concepts accessible to a global audience.
-                    </p>
-
-                    <p class="author-bio">
-                        His work spans from viral 3D-printed basketball videos to practical engineering solutions, with future goals including developing robotic arms and affordable prosthetic limbs for communities in need.
-                    </p>
-
-                    <div class="author-contact">
-                        <div class="author-contact-item">
-                            <div class="author-contact-icon">
-                                <i class="fas fa-phone"></i>
-                            </div>
-                            <a href="tel:+998994877599" class="contact-value">+998 99 478 75 99</a>
-                        </div>
-                        <div class="author-contact-item">
-                            <div class="author-contact-icon">
-                                <i class="fas fa-envelope"></i>
-                            </div>
-                            <a href="mailto:jahongirmirzo@protonmail.com" class="contact-value">jahongirmirzo@protonmail.com</a>
-                        </div>
+        <section class="about-section">
+            <h2>Meet the founder</h2>
+            <div class="founder">
+                <img src="{% static 'images/author.jpg' %}" alt="Jakhongirmirzo Ibrokhimov" loading="lazy">
+                <div class="founder-body">
+                    <div>
+                        <div class="founder-name">Jakhongirmirzo Ibrokhimov</div>
+                        <div class="founder-role">Engineer &amp; creator · Fergana, Uzbekistan</div>
                     </div>
+                    <p class="founder-bio">Inha University graduate, working engineer, and the hands behind every build on the channel. Next up: robotic arms and affordable prosthetic limbs.</p>
                 </div>
             </div>
-        </div>
-    </div>
+        </section>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+        <section class="about-section">
+            <h2>Work with us</h2>
+            <a href="mailto:engineericly@gmail.com" class="cta">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"></rect><path d="M3 7l9 6 9-6"></path></svg>
+                engineericly@gmail.com
+            </a>
+        </section>
+
+        {% include "partials/footer.html" %}
+    </main>
+
+    <script>
+        // Sections rise in as they scroll into view.
+        (function () {
+            var sections = document.querySelectorAll('.about-section');
+            var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+            if (reduce || !('IntersectionObserver' in window)) {
+                sections.forEach(function (s) { s.classList.add('is-in'); });
+                return;
+            }
+            var io = new IntersectionObserver(function (entries) {
+                entries.forEach(function (entry) {
+                    if (!entry.isIntersecting) return;
+                    entry.target.classList.add('is-in');
+                    io.unobserve(entry.target);
+                });
+            }, { rootMargin: '0px 0px -40px 0px' });
+            sections.forEach(function (s) { io.observe(s); });
+        })();
+    </script>
 </body>
 </html>

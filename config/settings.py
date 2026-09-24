@@ -36,7 +36,19 @@ SECRET_KEY = env.str('SECRET_KEY')
 DEBUG = env.bool('DEBUG', default=False)
 
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
+# The container healthcheck calls itself on localhost.
+ALLOWED_HOSTS += ['127.0.0.1', 'localhost']
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS', default=[])
+
+# Where the database and uploads live. The Docker image points this at the mounted
+# data folder; locally it stays the project root.
+DATA_DIR = Path(env.str('DATA_DIR', default=str(BASE_DIR)))
+
+# Behind the VM's nginx, which terminates HTTPS and forwards the original host.
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+USE_X_FORWARDED_HOST = True
+SESSION_COOKIE_SECURE = env.bool('SECURE_COOKIES', default=not DEBUG)
+CSRF_COOKIE_SECURE = env.bool('SECURE_COOKIES', default=not DEBUG)
 
 
 # Application definition
@@ -59,6 +71,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -93,7 +106,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DATA_DIR / 'db.sqlite3',
     }
 }
 
@@ -134,7 +147,7 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-STATIC_ROOT = str(BASE_DIR.joinpath('vol', 'static'))
+STATIC_ROOT = str(DATA_DIR.joinpath('vol', 'static'))
 
 ASSETS_DIR = os.path.join(BASE_DIR, 'assets')
 
@@ -144,7 +157,19 @@ if not os.path.exists(ASSETS_DIR):
 STATICFILES_DIRS = [os.path.join(BASE_DIR, 'assets')]
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = str(BASE_DIR.joinpath('vol', 'media'))
+MEDIA_ROOT = str(DATA_DIR.joinpath('vol', 'media'))
+
+# World-readable so the VM's nginx could serve /media straight from disk if wanted.
+FILE_UPLOAD_PERMISSIONS = 0o644
+FILE_UPLOAD_DIRECTORY_PERMISSIONS = 0o755
+
+# WhiteNoise serves /static from gunicorn, gzip/brotli-compressed. Templates add ?v= to
+# bust caches, so plain (non-hashed) names are fine.
+STORAGES = {
+    'default': {'BACKEND': 'django.core.files.storage.FileSystemStorage'},
+    'staticfiles': {'BACKEND': 'whitenoise.storage.CompressedStaticFilesStorage'},
+}
+WHITENOISE_MAX_AGE = 60 * 60 * 24
 
 
 # Default primary key field type
@@ -155,9 +180,9 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # UNFOLD SETTINGS
 UNFOLD = {
-    "SITE_TITLE": "Engineericly Feed",
-    "SITE_HEADER": "Engineericly Feed",
-    "SITE_SUBHEADER": "Engineericly Feed Admin Panel",
+    "SITE_TITLE": "engineericly",
+    "SITE_HEADER": "engineericly",
+    "SITE_SUBHEADER": "Bio link grid admin",
     "SITE_URL": "/",
     "SITE_ICON": lambda request: static("images/logo.jpg"),  # both modes, optimise for 32px height
     # "SITE_LOGO": lambda request: static("logo.svg"),  # both modes, optimise for 32px height
@@ -166,7 +191,7 @@ UNFOLD = {
         {
             "rel": "icon",
             "sizes": "32x32",
-            "type": "image/svg+xml",
+            "type": "image/x-icon",
             "href": lambda request: static("images/favicon.ico"),
         },
     ],

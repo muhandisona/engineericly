@@ -1,18 +1,27 @@
-name: engineericly-feed
+name: engineericly
+
+# Deploy from a clone of this repo on the VM, with a .env next to this file
+# (see .env.example), then run `make deploy`.
+# Point the VM's nginx at http://127.0.0.1:9192.
+#
+# Everything the app keeps lives in ${DATA_DIR} (default ./data next to this file):
+#   db.sqlite3
+#   vol/static   collected CSS/JS/images (rebuilt on every start)
+#   vol/media    uploaded covers — back this folder and the database up
 
 services:
   web:
-    # Use the image built by GitHub Actions
-    image: ghcr.io/muhandisona/engineericly_feed:latest
-    container_name: engineericly_feed_web
-    ports:
-      - "8112:8112"
-    volumes:
-      # Map to actual folders on your NAS for persistence
-      - /mnt/pool_one/apps/engineericly/vol:/app/vol
-      - /mnt/pool_one/apps/engineericly/db.sqlite3:/app/db.sqlite3
-    restart: unless-stopped
+    # Built on the server from this checkout: `make deploy` (git pull + rebuild).
+    build: .
+    image: engineericly:latest
+    container_name: engineericly_web
     env_file:
       - .env
-    # Removed the nginx-net requirement unless you manually created that network in Docker.
-    # Nginx Proxy Manager handles the connection via the NAS IP, so this isn't strictly needed.
+    environment:
+      DATA_DIR: /app/data
+    volumes:
+      - ${DATA_DIR:-./data}:/app/data
+    ports:
+      # Only reachable from the VM itself; set BIND_ADDRESS=0.0.0.0 if nginx runs elsewhere.
+      - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-9192}:8000"
+    restart: unless-stopped

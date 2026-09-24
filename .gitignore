@@ -27,6 +27,7 @@ staticfiles/
 static/
 .local_settings.py
 vol/
+data/
 
 # =========================================
 # Environment

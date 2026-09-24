@@ -1,70 +1,64 @@
-# Makefile for Engineericly Feed Docker Management
+# Makefile for engineericly Docker management
 
-.PHONY: help build up down restart logs shell clean migrate collectstatic createsuperuser
+.PHONY: help build up deploy down restart logs shell clean migrate collectstatic createsuperuser install test test-local
 
-# Default target
 help:
 	@echo "Available commands:"
-	@echo "  build     - Build Docker images"
-	@echo "  up        - Start development environment"
-	@echo "  down      - Stop and remove containers"
-	@echo "  restart   - Restart services"
-	@echo "  logs      - Show logs"
-	@echo "  shell     - Open shell in web container"
-	@echo "  clean     - Clean up containers and volumes"
-	@echo "  migrate   - Run Django migrations"
-	@echo "  collectstatic - Collect static files"
-	@echo "  createsuperuser - Create Django superuser"
+	@echo "  deploy          - Pull the latest code, rebuild the image and restart (use on the server)"
+	@echo "  build           - Build the image locally"
+	@echo "  up              - Start the containers"
+	@echo "  down            - Stop and remove containers"
+	@echo "  restart         - Restart services"
+	@echo "  logs            - Follow logs"
+	@echo "  shell           - Open a shell in the web container"
+	@echo "  migrate         - Run Django migrations"
+	@echo "  collectstatic   - Collect static files"
+	@echo "  createsuperuser - Create a Django admin user"
+	@echo "  test            - Run tests inside the container"
+	@echo "  test-local      - Run tests in the local .venv"
 
-# Build images
 build:
-	docker-compose build
+	docker compose build
 
-# Start development environment
 up:
-	docker-compose up -d
+	docker compose up -d
 
-# Update and restart services
-update:
-	docker-compose down && docker-compose up -d --build
+deploy:
+	git pull --ff-only
+	docker compose up -d --build --remove-orphans
+	docker image prune -f
 
-# Stop services
 down:
-	docker-compose down
+	docker compose down
 
-# Restart services
 restart:
-	docker-compose restart
+	docker compose restart
 
-# Show logs
 logs:
-	docker-compose logs -f
+	docker compose logs -f
 
-# Open shell in web container
 shell:
-	docker-compose exec web bash
+	docker compose exec web bash
 
-# Run Django migrations
 migrate:
-	docker-compose exec web python manage.py migrate
+	docker compose exec web python manage.py migrate
 
-# Collect static files
 collectstatic:
-	docker-compose exec web python manage.py collectstatic --noinput
+	docker compose exec web python manage.py collectstatic --noinput
 
-# Create superuser
 createsuperuser:
-	docker-compose exec web python manage.py createsuperuser
+	docker compose exec web python manage.py createsuperuser
 
-# Clean up everything
+# Stops containers; the data folder on disk is left alone.
 clean:
-	docker-compose down -v --remove-orphans
-	docker system prune -f
+	docker compose down --remove-orphans
+	docker image prune -f
 
-# Install dependencies (for local development)
 install:
 	pip install -r requirements.txt
 
-# Run tests
 test:
-	docker-compose exec web python manage.py test
+	docker compose exec web python manage.py test
+
+test-local:
+	.venv/bin/python manage.py test
