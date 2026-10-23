@@ -182,6 +182,20 @@ class DetectPlatformTests(TestCase):
 
 
 class BuildSiteTests(GalleryTestCase):
+    @override_settings(
+        ALLOWED_HOSTS=['admin.engineericly.com'],
+        PUBLIC_SITE_URL='https://links.engineericly.com',
+    )
+    def test_build_works_when_public_host_is_not_allowed(self):
+        # The admin server only allows its own host; the build renders for the public one.
+        self.make_post('Model')
+        with tempfile.TemporaryDirectory() as out_dir:
+            build_site(out_dir)
+            with open(os.path.join(out_dir, 'ig.html'), encoding='utf-8') as f:
+                self.assertIn('https://links.engineericly.com/static/images/logo.jpg', f.read())
+        from django.conf import settings
+        self.assertEqual(settings.ALLOWED_HOSTS, ['admin.engineericly.com'])
+
     def test_build_site_files_and_structure(self):
         published = self.make_post('Published Model')
         scheduled = self.make_post('Scheduled Model', published_at=timezone.now() + timedelta(days=2))

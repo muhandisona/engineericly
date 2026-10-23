@@ -7,6 +7,7 @@ from django.conf import settings
 from django.core.paginator import Paginator
 from django.template.loader import render_to_string
 from django.test import RequestFactory
+from django.test.utils import override_settings
 from django.utils import timezone
 
 from .views import PAGE_SIZE, get_visible_posts, post_to_dict
@@ -23,6 +24,15 @@ HEADERS_CONTENT = (
 
 def build_site(out_dir):
     """Build the static site into out_dir for Cloudflare Pages."""
+    # The pages are rendered as if requested on the public host, which the admin server's
+    # ALLOWED_HOSTS does not (and should not) list, so allow it just for the build.
+    public_host = urlparse(getattr(settings, 'PUBLIC_SITE_URL', 'https://links.engineericly.com')).hostname
+    allowed = list(settings.ALLOWED_HOSTS) + ([public_host] if public_host else [])
+    with override_settings(ALLOWED_HOSTS=allowed):
+        _build_site(out_dir)
+
+
+def _build_site(out_dir):
     os.makedirs(out_dir, exist_ok=True)
     now = timezone.now()
 
