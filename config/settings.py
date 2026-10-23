@@ -178,12 +178,23 @@ WHITENOISE_MAX_AGE = 60 * 60 * 24
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
+# Static site generation & Cloudflare Pages publishing
+PUBLIC_SITE_URL = env.str('PUBLIC_SITE_URL', default='https://links.engineericly.com').rstrip('/')
+CF_PAGES_PROJECT = env.str('CF_PAGES_PROJECT', default='engineericly-links')
+CLOUDFLARE_API_TOKEN = env.str('CLOUDFLARE_API_TOKEN', default='')
+CLOUDFLARE_ACCOUNT_ID = env.str('CLOUDFLARE_ACCOUNT_ID', default='')
+WRANGLER_BIN = env.str('WRANGLER_BIN', default='wrangler')
+PUBLISH_DEBOUNCE_SECONDS = env.int('PUBLISH_DEBOUNCE_SECONDS', default=10)
+PUBLISH_POLL_SECONDS = env.int('PUBLISH_POLL_SECONDS', default=15)
+PUBLISH_RETRY_SECONDS = env.int('PUBLISH_RETRY_SECONDS', default=300)
+
+
 # UNFOLD SETTINGS
 UNFOLD = {
     "SITE_TITLE": "engineericly",
     "SITE_HEADER": "engineericly",
     "SITE_SUBHEADER": "Bio link grid admin",
-    "SITE_URL": "/",
+    "SITE_URL": PUBLIC_SITE_URL,
     "SITE_ICON": lambda request: static("images/logo.jpg"),  # both modes, optimise for 32px height
     # "SITE_LOGO": lambda request: static("logo.svg"),  # both modes, optimise for 32px height
     "SITE_SYMBOL": "speed",  # symbol from icon set

@@ -28,6 +28,7 @@ static/
 .local_settings.py
 vol/
 data/
+site-build/
 
 # =========================================
 # Environment
@@ -56,3 +57,6 @@ Thumbs.db
 # Uncomment below if you want to ignore migrations
 # **/migrations/*.py
 # !**/migrations/__init__.py
+
+# wrangler cache from local deploys
+.wrangler/

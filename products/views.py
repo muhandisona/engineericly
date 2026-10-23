@@ -47,7 +47,7 @@ def feed_view(request, platform=''):
     """The bio-link grid. /ig, /tt and /yt pin the platform; / falls back to the referrer."""
     if not platform:
         platform = detect_platform(request.META.get('HTTP_REFERER', ''))
-    return render(request, 'feed.html', {'platform': platform})
+    return render(request, 'feed.html', {'platform': platform, 'static_site': False})
 
 
 def about_view(request):
@@ -57,7 +57,36 @@ def about_view(request):
     else:
         platform = ''
         back_url = reverse('feed')
-    return render(request, 'about.html', {'platform': platform, 'back_url': back_url})
+    return render(request, 'about.html', {'platform': platform, 'back_url': back_url, 'static_site': False})
+
+
+def get_visible_posts(platform='', now=None):
+    """Return the visible PostLink queryset for a platform.
+
+    If platform is empty or unknown, all visible posts are returned.
+    Only posts with published_at null or <= now are included.
+    """
+    if now is None:
+        now = timezone.now()
+    qs = PostLink.objects.filter(
+        Q(published_at__isnull=True) | Q(published_at__lte=now)
+    )
+    if platform and platform in PLATFORM_FIELDS:
+        qs = qs.filter(**{PLATFORM_FIELDS[platform]: True})
+    return qs
+
+
+def post_to_dict(post):
+    """Turn a PostLink into an item dict matching the gallery API shape."""
+    host = urlparse(post.link).hostname or ''
+    return {
+        'id': post.id,
+        'title': post.title,
+        'link': post.link,
+        'host': host.removeprefix('www.'),
+        'image': post.file.url if post.file else '',
+        'is_pinned': post.is_pinned,
+    }
 
 
 def api_gallery_view(request):
@@ -72,12 +101,7 @@ def api_gallery_view(request):
         # Older clients sent a `domain` instead of a platform name.
         platform = detect_platform(request.GET.get('domain', ''))
 
-    now = timezone.now()
-    post_links = PostLink.objects.filter(
-        Q(published_at__isnull=True) | Q(published_at__lte=now)
-    )
-    if platform:
-        post_links = post_links.filter(**{PLATFORM_FIELDS[platform]: True})
+    post_links = get_visible_posts(platform)
 
     # Ordering comes from Meta.ordering: pinned first, then highest order, then newest.
     paginator = Paginator(post_links, PAGE_SIZE)
@@ -89,17 +113,7 @@ def api_gallery_view(request):
         posts = []
         has_next = False
 
-    items = []
-    for p in posts:
-        host = urlparse(p.link).hostname or ''
-        items.append({
-            'id': p.id,
-            'title': p.title,
-            'link': p.link,
-            'host': host.removeprefix('www.'),
-            'image': p.file.url if p.file else '',
-            'is_pinned': p.is_pinned,
-        })
+    items = [post_to_dict(p) for p in posts]
 
     return JsonResponse({
         'items': items,

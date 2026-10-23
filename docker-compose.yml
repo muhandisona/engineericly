@@ -1,17 +1,19 @@
 name: engineericly
 
-# Deploy from a clone of this repo on the VM, with a .env next to this file
-# (see .env.example), then run `make deploy`.
-# Point the VM's nginx at http://127.0.0.1:9192.
+# Setup:
+#   - Admin + Django Unfold runs through a Cloudflare Tunnel at https://admin.engineericly.com
+#   - Public site is served as static files from Cloudflare Pages at https://links.engineericly.com
+#
+# Deploy from a clone of this repo with a .env next to this file (see .env.example),
+# then run `make deploy`.
 #
 # Everything the app keeps lives in ${DATA_DIR} (default ./data next to this file):
 #   db.sqlite3
 #   vol/static   collected CSS/JS/images (rebuilt on every start)
-#   vol/media    uploaded covers — back this folder and the database up
+#   vol/media    uploaded covers - back this folder and the database up
 
 services:
   web:
-    # Built on the server from this checkout: `make deploy` (git pull + rebuild).
     build: .
     image: engineericly:latest
     container_name: engineericly_web
@@ -22,6 +24,34 @@ services:
     volumes:
       - ${DATA_DIR:-./data}:/app/data
     ports:
-      # Only reachable from the VM itself; set BIND_ADDRESS=0.0.0.0 if nginx runs elsewhere.
+      # Optional: only for local access; the tunnel reaches it at http://web:8000
       - "${BIND_ADDRESS:-127.0.0.1}:${PORT:-9192}:8000"
     restart: unless-stopped
+
+  publisher:
+    build: .
+    image: engineericly:latest
+    container_name: engineericly_publisher
+    command: python manage.py run_publisher
+    env_file:
+      - .env
+    environment:
+      DATA_DIR: /app/data
+    volumes:
+      - ${DATA_DIR:-./data}:/app/data
+    depends_on:
+      web:
+        condition: service_healthy
+    healthcheck:
+      disable: true
+    restart: unless-stopped
+
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    container_name: engineericly_cloudflared
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${TUNNEL_TOKEN}
+    restart: unless-stopped
+    depends_on:
+      - web

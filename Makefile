@@ -1,6 +1,6 @@
 # Makefile for engineericly Docker management
 
-.PHONY: help build up deploy down restart logs shell clean migrate collectstatic createsuperuser install test test-local
+.PHONY: help build up deploy down restart logs shell clean migrate collectstatic createsuperuser install test test-local build-site publish publisher-logs
 
 help:
 	@echo "Available commands:"
@@ -16,6 +16,9 @@ help:
 	@echo "  createsuperuser - Create a Django admin user"
 	@echo "  test            - Run tests inside the container"
 	@echo "  test-local      - Run tests in the local .venv"
+	@echo "  build-site      - Build static site locally into site-build"
+	@echo "  publish         - Trigger static site publish now via web container"
+	@echo "  publisher-logs  - Follow logs from publisher container"
 
 build:
 	docker compose build
@@ -36,6 +39,9 @@ restart:
 
 logs:
 	docker compose logs -f
+
+publisher-logs:
+	docker compose logs -f publisher
 
 shell:
 	docker compose exec web bash
@@ -62,3 +68,9 @@ test:
 
 test-local:
 	.venv/bin/python manage.py test
+
+build-site:
+	.venv/bin/python manage.py build_site --out site-build
+
+publish:
+	docker compose exec web python manage.py publish

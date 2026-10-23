@@ -70,3 +70,28 @@ class PostLink(models.Model):
         if self.published_at is None:
             self.published_at = timezone.now()
         super().save(*args, **kwargs)
+
+
+class PublishState(models.Model):
+    needs_publish = models.BooleanField(default=False)
+    changed_at = models.DateTimeField(null=True, blank=True)
+    last_published_at = models.DateTimeField(null=True, blank=True)
+    last_status = models.CharField(max_length=20, default="", blank=True)
+    last_error = models.TextField(blank=True, default="")
+    last_url = models.CharField(max_length=255, blank=True, default="")
+
+    class Meta:
+        verbose_name = "Publish State"
+        verbose_name_plural = "Publish State"
+
+    def __str__(self):
+        return f"PublishState(needs_publish={self.needs_publish}, status={self.last_status})"
+
+    def save(self, *args, **kwargs):
+        self.pk = 1
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def get(cls):
+        obj, _ = cls.objects.get_or_create(pk=1)
+        return obj

@@ -1,15 +1,19 @@
-from django.contrib import admin
+from datetime import timedelta
+
+from django.contrib import admin, messages
+from django.shortcuts import redirect
+from django.urls import reverse
+from django.utils import timezone
 from unfold.admin import ModelAdmin
-from unfold.decorators import display
+from unfold.decorators import action, display
 
+from products.models import PostLink, PublishState
 from products.widgets import CustomUnfoldAdminImageFieldWidget
-
-
-from products.models import *
 
 
 @admin.register(PostLink)
 class PostLinkAdmin(ModelAdmin):
+    actions_list = ["publish_now"]
     list_display = ('cover', 'title', 'on_instagram', 'on_tiktok', 'on_youtube', 'is_pinned', 'order', 'published_at')
     list_display_links = ('cover', 'title')
     search_fields = ('title', 'link')
@@ -52,3 +56,32 @@ class PostLinkAdmin(ModelAdmin):
     @display(description="YouTube", boolean=True)
     def on_youtube(self, obj):
         return obj.show_for_youtube
+
+    @action(description="Publish now")
+    def publish_now(self, request):
+        state = PublishState.get()
+        state.needs_publish = True
+        state.changed_at = timezone.now() - timedelta(seconds=60)
+        state.save()
+        messages.success(request, "Publishing - the site updates in about a minute.")
+        return redirect(reverse("admin:products_postlink_changelist"))
+
+    def changelist_view(self, request, extra_context=None):
+        storage = messages.get_messages(request)
+        existing = list(storage)
+        for m in existing:
+            storage.add(m.level, m.message, m.extra_tags)
+        if not existing:
+            state = PublishState.get()
+            if state.last_status == "error":
+                lines = (state.last_error or "").strip().splitlines()
+                err_msg = lines[0] if lines else "Publish failed"
+                messages.warning(request, err_msg)
+            elif state.needs_publish:
+                messages.info(request, "Changes waiting to publish")
+            elif state.last_published_at:
+                messages.info(request, f"Last published: {state.last_published_at.strftime('%Y-%m-%d %H:%M:%S')}")
+            else:
+                messages.info(request, "Last published: never")
+        return super().changelist_view(request, extra_context=extra_context)
+

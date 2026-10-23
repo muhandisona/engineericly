@@ -3,6 +3,26 @@
 
     var PLATFORM = JSON.parse(document.getElementById('platform').textContent || '""');
     var API = window.GALLERY_API;
+
+    if (!PLATFORM) {
+        var ref = document.referrer || '';
+        var host = '';
+        try {
+            host = new URL(ref).hostname.toLowerCase();
+        } catch (e) {
+            host = ref.toLowerCase();
+        }
+        if (host.indexOf('instagram') !== -1) {
+            PLATFORM = 'instagram';
+        } else if (host.indexOf('tiktok') !== -1) {
+            PLATFORM = 'tiktok';
+        } else if (host.indexOf('youtube') !== -1 || host.indexOf('youtu.be') !== -1) {
+            PLATFORM = 'youtube';
+        }
+        if (PLATFORM && window.GALLERY_PAGES) {
+            window.GALLERY_PAGES = '/data/' + PLATFORM + '/';
+        }
+    }
     var SKELETONS = 6;
     var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
@@ -105,7 +125,9 @@
         loading = true;
         var skeletons = addSkeletons();
 
-        var url = API + '?page=' + page + (PLATFORM ? '&platform=' + encodeURIComponent(PLATFORM) : '');
+        var url = window.GALLERY_PAGES
+            ? window.GALLERY_PAGES + page + '.json'
+            : API + '?page=' + page + (PLATFORM ? '&platform=' + encodeURIComponent(PLATFORM) : '');
         fetch(url)
             .then(function (res) {
                 if (!res.ok) throw new Error('HTTP ' + res.status);

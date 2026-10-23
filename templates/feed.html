@@ -61,7 +61,11 @@
     </div>
 
     {{ platform|json_script:"platform" }}
+    {% if static_site %}
+    <script>window.GALLERY_PAGES = "/data/{{ platform|default:'all' }}/";</script>
+    {% else %}
     <script>window.GALLERY_API = "{% url 'api_gallery' %}";</script>
+    {% endif %}
     <script src="{% static 'js/feed.js' %}?v=3.0" defer></script>
 </body>
 </html>

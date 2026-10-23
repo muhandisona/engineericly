@@ -8,7 +8,7 @@
 <body class="about-page">
     <main class="page">
         <nav class="about-top">
-            <a href="{{ back_url }}" class="text-link">
+            <a href="{% if static_site %}/{% else %}{{ back_url }}{% endif %}" class="text-link" id="back-link">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M19 12H5"></path><path d="M11 18l-6-6 6-6"></path></svg>
                 Models
             </a>
@@ -106,5 +106,18 @@
             sections.forEach(function (s) { io.observe(s); });
         })();
     </script>
+    {% if static_site %}
+    <script>
+        (function () {
+            var params = new URLSearchParams(window.location.search);
+            var from = params.get('from');
+            var map = { instagram: '/ig', tiktok: '/tt', youtube: '/yt' };
+            if (map[from]) {
+                var back = document.getElementById('back-link');
+                if (back) back.setAttribute('href', map[from]);
+            }
+        })();
+    </script>
+    {% endif %}
 </body>
 </html>
