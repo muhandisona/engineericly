@@ -125,7 +125,7 @@ class FeedPageTests(TestCase):
         response = self.client.get(reverse('about'), {'from': 'tiktok'})
         self.assertEqual(response.context['back_url'], '/tt')
         response = self.client.get(reverse('about'), {'from': 'evil'})
-        self.assertEqual(response.context['back_url'], '/all/')
+        self.assertEqual(response.context['back_url'], '/all')
 
 
 class AdminTests(GalleryTestCase):
