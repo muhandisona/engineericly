@@ -109,19 +109,23 @@ class FeedPageTests(TestCase):
             self.assertEqual(response.status_code, 200, path)
             self.assertEqual(response.context['platform'], platform, path)
 
-    def test_root_uses_referrer(self):
-        response = self.client.get('/', HTTP_REFERER='https://l.instagram.com/?u=x')
+    def test_root_goes_to_admin(self):
+        response = self.client.get('/')
+        self.assertRedirects(response, '/admin/', fetch_redirect_response=False)
+
+    def test_all_preview_uses_referrer(self):
+        response = self.client.get('/all/', HTTP_REFERER='https://l.instagram.com/?u=x')
         self.assertEqual(response.context['platform'], 'instagram')
 
-    def test_root_without_referrer_shows_all(self):
-        response = self.client.get('/')
+    def test_all_preview_without_referrer_shows_all(self):
+        response = self.client.get('/all/')
         self.assertEqual(response.context['platform'], '')
 
     def test_about_back_link_returns_to_platform_grid(self):
         response = self.client.get(reverse('about'), {'from': 'tiktok'})
         self.assertEqual(response.context['back_url'], '/tt')
         response = self.client.get(reverse('about'), {'from': 'evil'})
-        self.assertEqual(response.context['back_url'], '/')
+        self.assertEqual(response.context['back_url'], '/all/')
 
 
 class AdminTests(GalleryTestCase):
